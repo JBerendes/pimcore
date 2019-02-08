@@ -16,12 +16,14 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Tool\Serialize;
 
-class Table extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Table extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
     use Extension\QueryColumnType;
@@ -71,25 +73,31 @@ class Table extends Data implements ResourcePersistenceAwareInterface, QueryReso
     public $data;
 
     /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'longtext';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'longtext';
-
-    /**
      * Type for the generated phpdoc
      *
      * @var string
      */
     public $phpdocType = 'array';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('text'), [
+                'notnull' => false
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
 
     /**
      * @return int

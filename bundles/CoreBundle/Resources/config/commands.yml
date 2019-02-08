@@ -4,3 +4,9 @@ services:
             - '@Pimcore\Image\Optimizer'
         tags:
             - { name: console.command, command: 'pimcore:thumbnails:optimize-images' }
+
+    Pimcore\Bundle\CoreBundle\Command\UpdateDataObjectSchemaCommand:
+        arguments:
+            - '@Pimcore\ClassDefinition\SchemaBuilderInterface'
+        tags:
+            - { name: console.command, command: 'pimcore:data-object:schema:update' }

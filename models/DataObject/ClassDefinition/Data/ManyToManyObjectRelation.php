@@ -16,12 +16,14 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Relations\AbstractRelations;
 use Pimcore\Model\Element;
 
-class ManyToManyObjectRelation extends AbstractRelations implements QueryResourcePersistenceAwareInterface
+class ManyToManyObjectRelation extends AbstractRelations implements QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Model\DataObject\ClassDefinition\Data\Extension\Relation;
     use Extension\QueryColumnType;
@@ -73,6 +75,19 @@ class ManyToManyObjectRelation extends AbstractRelations implements QueryResourc
      * @var
      */
     public $visibleFields;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('text'), [
+                'notnull' => false
+            ])
+        ];
+    }
+
 
     /**
      * @return bool

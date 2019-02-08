@@ -16,11 +16,13 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class CalculatedValue extends Data implements QueryResourcePersistenceAwareInterface
+class CalculatedValue extends Data implements QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\QueryColumnType;
 
@@ -61,6 +63,19 @@ class CalculatedValue extends Data implements QueryResourcePersistenceAwareInter
      * @var string
      */
     public $phpdocType = '\\Pimcore\\Model\\DataObject\\Data\\CalculatedValue';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('string'), [
+                'notnull' => false,
+                'length' => $this->columnLength
+            ])
+        ];
+    }
 
     /**
      * @return int

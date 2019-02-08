@@ -36,20 +36,6 @@ class Hotspotimage extends Model\DataObject\ClassDefinition\Data\Image
     public $fieldtype = 'hotspotimage';
 
     /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = ['image' => 'int(11)', 'hotspots' => 'text'];
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = ['image' => 'int(11)', 'hotspots' => 'text'];
-
-    /**
      * Type for the generated phpdoc
      *
      * @var string

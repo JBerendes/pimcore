@@ -17,18 +17,10 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
-interface QueryResourcePersistenceAwareInterface
+interface ResourceSchemaColumnsAwareInterface
 {
     /**
-     * Returns the data which should be stored in the query columns
-     *
-     * @param mixed $data
-     * @param null|\Pimcore\Model\DataObject\AbstractObject $object
-     * @param mixed $params
-     *
-     * @return mixed
-     *
-     * abstract public function getDataForQueryResource($data);
+     * @return array
      */
-    public function getDataForQueryResource($data, $object = null, $params = []);
+    public function getSchemaColumns(): array;
 }

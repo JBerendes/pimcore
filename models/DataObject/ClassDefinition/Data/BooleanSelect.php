@@ -16,11 +16,13 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class BooleanSelect extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class BooleanSelect extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Model\DataObject\Traits\SimpleComparisonTrait;
     use Extension\ColumnType;
@@ -53,18 +55,32 @@ class BooleanSelect extends Data implements ResourcePersistenceAwareInterface, Q
             'value' => self::NO_VALUE
         ]
     ];
+
     /**
      * Static type of this element
      *
      * @var string
      */
     public $fieldtype = 'booleanSelect';
-    /** @var string */
+
+    /**
+     * @var string
+     */
     public $yesLabel;
-    /** @var string */
+
+    /**
+     * @var string
+     */
     public $noLabel;
-    /** @var string */
+
+    /**
+     * @var string
+     */
     public $emptyLabel;
+
+    /**
+     * @var array
+     */
     public $options = self::DEFAULT_OPTIONS;
 
     /**
@@ -73,25 +89,31 @@ class BooleanSelect extends Data implements ResourcePersistenceAwareInterface, Q
     public $width;
 
     /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'tinyint(1) null';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'tinyint(1) null';
-
-    /**
      * Type for the generated phpdoc
      *
      * @var string
      */
     public $phpdocType = 'boolean';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('boolean'), [
+                'notnull' => false
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
 
     /**
      * @return array

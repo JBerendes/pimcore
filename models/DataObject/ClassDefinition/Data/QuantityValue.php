@@ -16,13 +16,15 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Cache;
 use Pimcore\Cache\Runtime;
 use Pimcore\Logger;
 use Pimcore\Model;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class QuantityValue extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class QuantityValue extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
     use Extension\QueryColumnType;
@@ -65,24 +67,29 @@ class QuantityValue extends Data implements ResourcePersistenceAwareInterface, Q
     public $decimalPrecision;
 
     /**
-     * Type for the column to query
-     *
-     * @var int
+     * {@inheritdoc}
      */
-    public $queryColumnType = [
-        'value' => 'double',
-        'unit' => 'bigint(20)'
-    ];
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName() . '__value', Type::getType('float'), [
+                'notnull' => false
+            ]),
+            new Column($this->getName() . '__unit', Type::getType('bigint'), [
+                'notnull' => false,
+                'length' => 20
+            ])
+        ];
+    }
 
     /**
-     * Type for the column
-     *
-     * @var string
+     * {@inheritdoc}
      */
-    public $columnType = [
-        'value' => 'double',
-        'unit' => 'bigint(20)'
-    ];
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
+
 
     /**
      * Type for the generated phpdoc

@@ -16,13 +16,15 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Tool\Serialize;
 
-class Video extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Video extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
     use Extension\QueryColumnType;
@@ -47,25 +49,31 @@ class Video extends Data implements ResourcePersistenceAwareInterface, QueryReso
     public $height;
 
     /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'text';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'text';
-
-    /**
      * Type for the generated phpdoc
      *
      * @var string
      */
     public $phpdocType = '\\Pimcore\\Model\\DataObject\\Data\\Video';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('text'), [
+                'notnull' => false
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
 
     /**
      * @return int

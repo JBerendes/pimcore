@@ -16,12 +16,14 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\DataObject\Consent\Service;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class Consent extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Consent extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Model\DataObject\Traits\SimpleComparisonTrait;
     use Extension\ColumnType;
@@ -40,23 +42,6 @@ class Consent extends Data implements ResourcePersistenceAwareInterface, QueryRe
     public $defaultValue = 0;
 
     /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'tinyint(1)';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = [
-        'consent' => 'tinyint(1)',
-        'note' => 'int(11)'
-    ];
-
-    /**
      * Type for the generated phpdoc
      *
      * @var string
@@ -69,6 +54,34 @@ class Consent extends Data implements ResourcePersistenceAwareInterface, QueryRe
      * @var string
      */
     public $width;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName() . '__consent', Type::getType('boolean'), [
+                'notnull' => false
+            ]),
+            new Column($this->getName() . '__note', Type::getType('int'), [
+                'length' => 11,
+                'notnull' => false
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('boolean'), [
+                'notnull' => false
+            ])
+        ];
+    }
 
     /**
      * @see ResourcePersistenceAwareInterface::getDataForResource

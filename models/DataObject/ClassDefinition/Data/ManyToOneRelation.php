@@ -16,6 +16,8 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Logger;
 use Pimcore\Model;
 use Pimcore\Model\Asset;
@@ -24,7 +26,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Relations\AbstractRelations;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element;
 
-class ManyToOneRelation extends AbstractRelations implements QueryResourcePersistenceAwareInterface
+class ManyToOneRelation extends AbstractRelations implements QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Model\DataObject\ClassDefinition\Data\Extension\Relation;
     use Extension\QueryColumnType;
@@ -99,6 +101,24 @@ class ManyToOneRelation extends AbstractRelations implements QueryResourcePersis
      * @var array
      */
     public $documentTypes;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return [
+            new Column($this->getName() . '__id', Type::getType('integer'), [
+                'notnull' => false,
+                'length' => 11
+            ]),
+            new Column($this->getName() . '__type', Type::getType('string'), [
+                'columnDefinition' => "enum('document','asset','object')",
+                'notnull' => false
+            ])
+        ];
+    }
+
 
     /**
      * @return bool

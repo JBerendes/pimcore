@@ -91,6 +91,7 @@ class PimcoreCoreExtension extends ConfigurableExtension implements PrependExten
         $loader->load('services.yml');
         $loader->load('services_routing.yml');
         $loader->load('services_workflow.yml');
+        $loader->load('class_builder.yml');
         $loader->load('extensions.yml');
         $loader->load('logging.yml');
         $loader->load('request_response.yml');

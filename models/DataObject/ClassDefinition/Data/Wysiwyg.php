@@ -16,13 +16,15 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\Element;
 use Pimcore\Tool\Text;
 
-class Wysiwyg extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Wysiwyg extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Model\DataObject\ClassDefinition\Data\Extension\Text;
     use Model\DataObject\Traits\SimpleComparisonTrait;
@@ -47,20 +49,6 @@ class Wysiwyg extends Data implements ResourcePersistenceAwareInterface, QueryRe
     public $height;
 
     /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'longtext';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'longtext';
-
-    /**
      * Type for the generated phpdoc
      *
      * @var string
@@ -76,6 +64,26 @@ class Wysiwyg extends Data implements ResourcePersistenceAwareInterface, QueryRe
      * @var bool
      */
     public $excludeFromSearchIndex = false;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('text'), [
+                'notnull' => false
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
 
     /**
      * @return int

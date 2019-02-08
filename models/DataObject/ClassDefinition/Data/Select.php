@@ -16,11 +16,13 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class Select extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Select extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Model\DataObject\Traits\SimpleComparisonTrait;
     use Extension\ColumnType;
@@ -61,20 +63,6 @@ class Select extends Data implements ResourcePersistenceAwareInterface, QueryRes
     public $optionsProviderData;
 
     /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'varchar';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'varchar';
-
-    /**
      * Column length
      *
      * @var int
@@ -87,6 +75,28 @@ class Select extends Data implements ResourcePersistenceAwareInterface, QueryRes
      * @var string
      */
     public $phpdocType = 'string';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('string'), [
+                'notnull' => false,
+                'length' => 190
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
+
 
     /**
      * @return int
@@ -124,26 +134,6 @@ class Select extends Data implements ResourcePersistenceAwareInterface, QueryRes
             }
             $this->setColumnLength($matches[2] <= 190 ? $matches[2] : 190);
         }
-    }
-
-    /**
-     * @return string
-     */
-    public function getColumnType()
-    {
-        $this->correctColumnDefinition('columnType');
-
-        return $this->columnType . '(' . $this->getColumnLength() . ')';
-    }
-
-    /**
-     * @return string
-     */
-    public function getQueryColumnType()
-    {
-        $this->correctColumnDefinition('queryColumnType');
-
-        return $this->queryColumnType . '(' . $this->getColumnLength() . ')';
     }
 
     /**

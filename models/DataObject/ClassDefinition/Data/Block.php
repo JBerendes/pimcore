@@ -16,6 +16,8 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Db;
 use Pimcore\Logger;
 use Pimcore\Model;
@@ -24,7 +26,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\Element;
 use Pimcore\Tool\Serialize;
 
-class Block extends Data implements CustomResourcePersistingInterface, ResourcePersistenceAwareInterface
+class Block extends Data implements CustomResourcePersistingInterface, ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface
 {
     use Element\ChildsCompatibilityTrait;
     use Extension\ColumnType;
@@ -67,13 +69,6 @@ class Block extends Data implements CustomResourcePersistingInterface, ResourceP
     public $maxItems;
 
     /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'longtext';
-
-    /**
      * @var string
      */
     public $styleElement = '';
@@ -106,6 +101,18 @@ class Block extends Data implements CustomResourcePersistingInterface, ResourceP
      * @var array
      */
     public $fieldDefinitionsCache;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('text'), [
+                'notnull' => false
+            ])
+        ];
+    }
 
     /**
      * @see ResourcePersistenceAwareInterface::getDataForResource

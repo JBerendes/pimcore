@@ -16,11 +16,13 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class Password extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Password extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
     use Extension\QueryColumnType;
@@ -38,20 +40,6 @@ class Password extends Data implements ResourcePersistenceAwareInterface, QueryR
      * @var int
      */
     public $width;
-
-    /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'varchar(190)';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'varchar(190)';
 
     /**
      * Type for the generated phpdoc
@@ -74,6 +62,28 @@ class Password extends Data implements ResourcePersistenceAwareInterface, QueryR
      * @var string
      */
     public $saltlocation = '';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('string'), [
+                'notnull' => false,
+                'length' => 190
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
+
 
     /**
      * @return int

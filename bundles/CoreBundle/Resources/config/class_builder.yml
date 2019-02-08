@@ -1,0 +1,15 @@
+services:
+    Pimcore\ClassDefinition\ClassInfoBlockBuilder: ~
+    Pimcore\ClassDefinition\ClassInfoBlockBuilderInterface: '@Pimcore\ClassDefinition\ClassInfoBlockBuilder'
+
+    Pimcore\ClassDefinition\ClassBuilder:
+        arguments:
+            - !php/const PIMCORE_CLASS_DIRECTORY
+            - '@Pimcore\ClassDefinition\ClassInfoBlockBuilderInterface'
+
+    Pimcore\ClassDefinition\ClassBuilderInterface: '@Pimcore\ClassDefinition\ClassBuilder'
+
+    Pimcore\ClassDefinition\SchemaBuilder:
+        arguments:
+            - '@doctrine.dbal.default_connection'
+    Pimcore\ClassDefinition\SchemaBuilderInterface: '@Pimcore\ClassDefinition\SchemaBuilder'

@@ -16,10 +16,12 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class Input extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Input extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Model\DataObject\ClassDefinition\Data\Extension\Text;
     use Model\DataObject\Traits\SimpleComparisonTrait;
@@ -37,20 +39,6 @@ class Input extends Data implements ResourcePersistenceAwareInterface, QueryReso
      * @var int
      */
     public $width;
-
-    /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'varchar';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'varchar';
 
     /**
      * Column length
@@ -80,6 +68,28 @@ class Input extends Data implements ResourcePersistenceAwareInterface, QueryReso
      * @var bool
      */
     public $showCharCount;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('string'), [
+                'notnull' => false,
+                'length' => 190
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
+
 
     /**
      * @return int
@@ -251,14 +261,6 @@ class Input extends Data implements ResourcePersistenceAwareInterface, QueryReso
     public function setShowCharCount($showCharCount)
     {
         $this->showCharCount = $showCharCount;
-    }
-
-    /**
-     * @return string
-     */
-    public function getColumnType()
-    {
-        return $this->columnType . '(' . $this->getColumnLength() . ')';
     }
 
     /**

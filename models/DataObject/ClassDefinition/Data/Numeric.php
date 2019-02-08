@@ -16,18 +16,14 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class Numeric extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Numeric extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Model\DataObject\Traits\SimpleComparisonTrait;
-    use Extension\ColumnType {
-        getColumnType as public genericGetColumnType;
-    }
-    use Extension\QueryColumnType {
-        getQueryColumnType as public genericGetQueryColumnType;
-    }
 
     const DECIMAL_SIZE_DEFAULT = 64;
     const DECIMAL_PRECISION_DEFAULT = 0;
@@ -48,20 +44,6 @@ class Numeric extends Data implements ResourcePersistenceAwareInterface, QueryRe
      * @var float
      */
     public $defaultValue;
-
-    /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'double';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'double';
 
     /**
      * Type for the generated phpdoc
@@ -111,6 +93,71 @@ class Numeric extends Data implements ResourcePersistenceAwareInterface, QueryRe
      * @var int
      */
     public $decimalPrecision;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        if ($this->getInteger()) {
+            return [
+                new Column($this->getName(), Type::getType('integer'), [
+                    'notnull' => false
+                ])
+            ];
+        }
+
+        // decimalPrecision already existed in earlier versions to denote the amount of digits after the
+        // comma (and is used in ExtJS). To avoid migrations, decimalSize was chosen to denote the total amount
+        // of supported digits despite the confusing naming.
+        //
+        // The two properties used in the class definition translate to the following MySQL naming:
+        //
+        // DECIMAL(precision, scale) = DECIMAL(decimalSize, decimalPrecision)
+
+        // these are named after what MySQL expects - DECIMAL(precision, scale)
+        $precision = self::DECIMAL_SIZE_DEFAULT;
+        $scale = self::DECIMAL_PRECISION_DEFAULT;
+
+        if (null !== $this->decimalSize) {
+            $precision = (int)$this->decimalSize;
+        }
+
+        if (null !== $this->decimalPrecision) {
+            $scale = (int)$this->decimalPrecision;
+        }
+
+        if ($precision < 1 || $precision > 65) {
+            throw new \InvalidArgumentException('Decimal precision must be a value between 1 and 65');
+        }
+
+        if ($scale < 0 || $scale > 30 || $scale > $precision) {
+            throw new \InvalidArgumentException('Decimal scale must be a value between 0 and 30');
+        }
+
+        if ($scale > $precision) {
+            throw new \InvalidArgumentException(sprintf(
+                'Decimal scale can\'t be larger than precision (%d)',
+                $precision
+            ));
+        }
+
+        return [
+            new Column($this->getName(), Type::getType('float'), [
+                'notnull' => false,
+                'scale' => $scale,
+                'precision' => $precision
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
 
     /**
      * @inheritDoc
@@ -284,81 +331,9 @@ class Numeric extends Data implements ResourcePersistenceAwareInterface, QueryRe
         $this->unique = $unique;
     }
 
-    /**
-     * @return string
-     */
-    public function getColumnType()
-    {
-        if ($this->getInteger()) {
-            return 'bigint(20)';
-        }
-
-        if ($this->isDecimalType()) {
-            return $this->buildDecimalColumnType();
-        }
-
-        return $this->genericGetColumnType();
-    }
-
-    /**
-     * @return string
-     */
-    public function getQueryColumnType()
-    {
-        if ($this->getInteger()) {
-            return 'bigint(20)';
-        }
-
-        if ($this->isDecimalType()) {
-            return $this->buildDecimalColumnType();
-        }
-
-        return $this->genericGetQueryColumnType();
-    }
-
     public function isDecimalType(): bool
     {
         return null !== $this->getDecimalSize() || null !== $this->getDecimalPrecision();
-    }
-
-    private function buildDecimalColumnType(): string
-    {
-        // decimalPrecision already existed in earlier versions to denote the amount of digits after the
-        // comma (and is used in ExtJS). To avoid migrations, decimalSize was chosen to denote the total amount
-        // of supported digits despite the confusing naming.
-        //
-        // The two properties used in the class definition translate to the following MySQL naming:
-        //
-        // DECIMAL(precision, scale) = DECIMAL(decimalSize, decimalPrecision)
-
-        // these are named after what MySQL expects - DECIMAL(precision, scale)
-        $precision = self::DECIMAL_SIZE_DEFAULT;
-        $scale = self::DECIMAL_PRECISION_DEFAULT;
-
-        if (null !== $this->decimalSize) {
-            $precision = intval($this->decimalSize);
-        }
-
-        if (null !== $this->decimalPrecision) {
-            $scale = intval($this->decimalPrecision);
-        }
-
-        if ($precision < 1 || $precision > 65) {
-            throw new \InvalidArgumentException('Decimal precision must be a value between 1 and 65');
-        }
-
-        if ($scale < 0 || $scale > 30 || $scale > $precision) {
-            throw new \InvalidArgumentException('Decimal scale must be a value between 0 and 30');
-        }
-
-        if ($scale > $precision) {
-            throw new \InvalidArgumentException(sprintf(
-                'Decimal scale can\'t be larger than precision (%d)',
-                $precision
-            ));
-        }
-
-        return sprintf('DECIMAL(%d, %d)', $precision, $scale);
     }
 
     /**

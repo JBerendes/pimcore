@@ -16,11 +16,13 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Geo\AbstractGeo;
 
-class Geopoint extends AbstractGeo implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Geopoint extends AbstractGeo implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
     use Extension\QueryColumnType;
@@ -33,31 +35,35 @@ class Geopoint extends AbstractGeo implements ResourcePersistenceAwareInterface,
     public $fieldtype = 'geopoint';
 
     /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = [
-        'longitude' => 'double',
-        'latitude' => 'double'
-    ];
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = [
-        'longitude' => 'double',
-        'latitude' => 'double'
-    ];
-
-    /**
      * Type for the generated phpdoc
      *
      * @var string
      */
     public $phpdocType = '\\Pimcore\\Model\\DataObject\\Data\\Geopoint';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName() . '__longitude', Type::getType('float'), [
+                'notnull' => false
+            ]),
+            new Column($this->getName() . '__latitude', Type::getType('float'), [
+                'notnull' => false
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
+
 
     /**
      * @see ResourcePersistenceAwareInterface::getDataForResource

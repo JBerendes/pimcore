@@ -16,11 +16,13 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Geo\AbstractGeo;
 
-class Geobounds extends AbstractGeo implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Geobounds extends AbstractGeo implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
     use Extension\QueryColumnType;
@@ -33,35 +35,40 @@ class Geobounds extends AbstractGeo implements ResourcePersistenceAwareInterface
     public $fieldtype = 'geobounds';
 
     /**
-     * Type for the column to query
-     *
-     * @var array
-     */
-    public $queryColumnType = [
-        'NElongitude' => 'double',
-        'NElatitude' => 'double',
-        'SWlongitude' => 'double',
-        'SWlatitude' => 'double'
-    ];
-
-    /**
-     * Type for the column
-     *
-     * @var array
-     */
-    public $columnType = [
-        'NElongitude' => 'double',
-        'NElatitude' => 'double',
-        'SWlongitude' => 'double',
-        'SWlatitude' => 'double'
-    ];
-
-    /**
      * Type for the generated phpdoc
      *
      * @var string
      */
     public $phpdocType = '\\Pimcore\\Model\\DataObject\\Data\\Geobounds';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName() . '__NElongitude', Type::getType('float'), [
+                'notnull' => false
+            ]),
+            new Column($this->getName() . '__NElatitude', Type::getType('float'), [
+                'notnull' => false
+            ]),
+            new Column($this->getName() . '__SWlongitude', Type::getType('float'), [
+                'notnull' => false
+            ]),
+            new Column($this->getName() . '__SWlatitude', Type::getType('float'), [
+                'notnull' => false
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
 
     /**
      * @see ResourcePersistenceAwareInterface::getDataForResource

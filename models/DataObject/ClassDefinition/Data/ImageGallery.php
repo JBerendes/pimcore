@@ -16,6 +16,8 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
@@ -23,7 +25,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\Element;
 use Pimcore\Tool\Serialize;
 
-class ImageGallery extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class ImageGallery extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
     use Extension\QueryColumnType;
@@ -34,20 +36,6 @@ class ImageGallery extends Data implements ResourcePersistenceAwareInterface, Qu
      * @var string
      */
     public $fieldtype = 'imageGallery';
-
-    /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = ['images' => 'text', 'hotspots' => 'text'];
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = ['images' => 'text', 'hotspots' => 'text'];
 
     /**
      * Type for the generated phpdoc
@@ -87,6 +75,30 @@ class ImageGallery extends Data implements ResourcePersistenceAwareInterface, Qu
      * @var string
      */
     public $predefinedDataTemplates;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName() . '__images', Type::getType('text'), [
+                'notnull' => false
+            ]),
+            new Column($this->getName() . '__hotspots', Type::getType('text'), [
+                'notnull' => false
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
+
 
     /**
      * @param int $ratioX

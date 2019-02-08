@@ -18,6 +18,8 @@ namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Logger;
 use Pimcore\Model;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -29,7 +31,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
  *
  * How to generate a key: vendor/bin/generate-defuse-key
  */
-class EncryptedField extends Data implements ResourcePersistenceAwareInterface
+class EncryptedField extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
 
@@ -66,18 +68,21 @@ class EncryptedField extends Data implements ResourcePersistenceAwareInterface
     public $delegate;
 
     /**
-     * Type for the column
-     *
-     * @var array
-     */
-    public $columnType = 'LONGBLOB';
-
-    /**
      * Type for the generated phpdoc
      *
      * @var string
      */
     public $phpdocType;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('blob'))
+        ];
+    }
 
     /**
      * @see ResourcePersistenceAwareInterface::getDataForResource

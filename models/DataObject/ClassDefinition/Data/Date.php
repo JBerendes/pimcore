@@ -16,12 +16,14 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Db;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class Date extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class Date extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
     use Extension\QueryColumnType;
@@ -32,20 +34,6 @@ class Date extends Data implements ResourcePersistenceAwareInterface, QueryResou
      * @var string
      */
     public $fieldtype = 'date';
-
-    /**
-     * Type for the column to query
-     *
-     * @var string
-     */
-    public $queryColumnType = 'bigint(20)';
-
-    /**
-     * Type for the column
-     *
-     * @var string
-     */
-    public $columnType = 'bigint(20)';
 
     /**
      * Type for the generated phpdoc
@@ -65,6 +53,27 @@ class Date extends Data implements ResourcePersistenceAwareInterface, QueryResou
     public $useCurrentDate;
 
     /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        return [
+            new Column($this->getName(), Type::getType('bigint'), [
+                'notnull' => false,
+                'length' => 20
+            ])
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
+
+    /**
      * @see ResourcePersistenceAwareInterface::getDataForResource
      *
      * @param \Zend_Date|\DateTime $data
@@ -76,12 +85,13 @@ class Date extends Data implements ResourcePersistenceAwareInterface, QueryResou
     public function getDataForResource($data, $object = null, $params = [])
     {
         if ($data) {
-            $result = $data->getTimestamp();
-            if ($this->getColumnType() == 'date') {
+            return $data->getTimestamp();
+            //@brusch: What is this? I thought that dates always get stored as timestamp
+            /*if ($this->getColumnType() == 'date') {
                 $result = date('Y-m-d', $result);
             }
-
             return $result;
+            */
         }
     }
 
@@ -97,16 +107,14 @@ class Date extends Data implements ResourcePersistenceAwareInterface, QueryResou
     public function getDataFromResource($data, $object = null, $params = [])
     {
         if ($data) {
-            if ($this->getColumnType() == 'date') {
+            /*if ($this->getColumnType() == 'date') {
                 $data = strtotime($data);
                 if ($data === false) {
                     return null;
                 }
-            }
+            }*/
 
-            $result = $this->getDateFromTimestamp($data);
-
-            return $result;
+            return $this->getDateFromTimestamp($data);
         }
     }
 
@@ -422,24 +430,24 @@ class Date extends Data implements ResourcePersistenceAwareInterface, QueryResou
     {
         $timestamp = $value;
 
-        if ($this->getColumnType() == 'date') {
+        /*if ($this->getColumnType() == 'date') {
             $value = date('Y-m-d', $value);
-        }
+        }*/
 
         if ($operator == '=') {
             $db = Db::get();
 
-            if ($this->getColumnType() == 'date') {
+            /*if ($this->getColumnType() == 'date') {
                 $condition = $db->quoteIdentifier($params['name']) . ' = '. $db->quote($value);
 
                 return $condition;
-            } else {
-                $maxTime = $timestamp + (86400 - 1); //specifies the top point of the range used in the condition
-                $filterField = $params['name'] ? $params['name'] : $this->getName();
-                $condition = '`' . $filterField . '` BETWEEN ' . $db->quote($value) . ' AND ' . $db->quote($maxTime);
+            } else {*/
+            $maxTime = $timestamp + (86400 - 1); //specifies the top point of the range used in the condition
+            $filterField = $params['name'] ? $params['name'] : $this->getName();
+            $condition = '`' . $filterField . '` BETWEEN ' . $db->quote($value) . ' AND ' . $db->quote($maxTime);
 
-                return $condition;
-            }
+            return $condition;
+            //}
         }
 
         return parent::getFilterConditionExt($value, $operator, $params);

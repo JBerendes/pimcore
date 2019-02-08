@@ -16,11 +16,13 @@
 
 namespace Pimcore\Model\DataObject\ClassDefinition\Data;
 
+use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Pimcore\Model;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
-class StructuredTable extends Data implements ResourcePersistenceAwareInterface, QueryResourcePersistenceAwareInterface
+class StructuredTable extends Data implements ResourcePersistenceAwareInterface, ResourceSchemaColumnsAwareInterface, QueryResourcePersistenceAwareInterface, QueryResourceSchemaColumnsAwareInterface
 {
     use Extension\ColumnType;
     use Extension\QueryColumnType;
@@ -68,6 +70,31 @@ class StructuredTable extends Data implements ResourcePersistenceAwareInterface,
      * @var string
      */
     public $phpdocType = '\\Pimcore\\Model\\DataObject\\Data\\StructuredTable';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaColumns(): array
+    {
+        $columns = [];
+
+        foreach ($this->calculateDbColumns() as $c) {
+            $columns[$c->name] = new Column($this->getName() . '__' . $c->name, Type::getType($c->type), [
+                'notnull' => false
+            ]);
+        }
+
+        return $columns;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getQuerySchemaColumns(): array
+    {
+        return $this->getSchemaColumns();
+    }
+
 
     /**
      * @return int
@@ -533,32 +560,6 @@ class StructuredTable extends Data implements ResourcePersistenceAwareInterface,
     }
 
     /**
-     * @return array|string
-     */
-    public function getColumnType()
-    {
-        $columns = [];
-        foreach ($this->calculateDbColumns() as $c) {
-            $columns[$c->name] = $c->type;
-        }
-
-        return $columns;
-    }
-
-    /**
-     * @return array|string
-     */
-    public function getQueryColumnType()
-    {
-        $columns = [];
-        foreach ($this->calculateDbColumns() as $c) {
-            $columns[$c->name] = $c->type;
-        }
-
-        return $columns;
-    }
-
-    /**
      * @return array
      */
     protected function calculateDbColumns()
@@ -595,9 +596,9 @@ class StructuredTable extends Data implements ResourcePersistenceAwareInterface,
     protected function typeMapper($type, $length = null)
     {
         $mapper = [
-            'text' => 'varchar('.($length > 0 ? $length : '190').')',
-            'number' => 'double',
-            'bool' => 'tinyint(1)'
+            'text' => 'string',
+            'number' => 'float',
+            'bool' => 'boolean'
         ];
 
         return $mapper[$type];

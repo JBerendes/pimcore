@@ -36,26 +36,6 @@ class InputQuantityValue extends QuantityValue
      */
     public $fieldtype = 'inputQuantityValue';
 
-    /**
-     * Type for the column to query
-     *
-     * @var array
-     */
-    public $queryColumnType = [
-        'value' => 'varchar(255)',
-        'unit' => 'bigint(20)'
-    ];
-
-    /**
-     * Type for the column
-     *
-     * @var array
-     */
-    public $columnType = [
-        'value' => 'varchar(255)',
-        'unit' => 'bigint(20)'
-    ];
-
     public $phpdocType = '\\Pimcore\\Model\\DataObject\\Data\\InputQuantityValue';
 
     /**
